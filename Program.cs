@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Calculator
@@ -18,31 +19,28 @@ namespace Calculator
             int arabNum1 = 0, arabNum2 = 0;
             bool rimSymbol = false, arabSymbol = false;
 
-            //ввод данных и очистка вырожения от пробелов
-            Console.WriteLine("Start program...\nInput: ");
+            
+            Console.WriteLine("введите выражение используя либо римские либо арабские цифры от 0 до 10");
 
             string input = Console.ReadLine();
 
-            input = input.Trim();
-            char[] separators = new char[] { ' ' };//,'+','*','/','-' }; 
-            string[] exprethion = input.Split(separators);
+            bool gramatika = false;
+            string pattern = @"[+\-*/]";
+            MatchCollection matches = Regex.Matches(input, pattern);//ищем какая будет операция
 
-            List<string> trimExpration = new List<string>();
-            for (int i = 0; i < exprethion.Length; i++)
+            char[] separators = new char[] { ' ','+','*','/','-' }; 
+            string[] exprethion = input.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            if (matches.Count == 1 && exprethion.Count()== 2) 
             {
-                if (exprethion[i] != "")
-                {
-                    trimExpration.Add(exprethion[i]);
-                }
+                //получение значений из введенных данных
+                gramatika = true;
+                operation = matches[0].Value;
+                num1 = exprethion[0];
+                num2 = exprethion[1];
             }
-            //получение значений из введенных данных
-            if (trimExpration.Count == 3)
+
+            if (gramatika)
             {
-                num1 = trimExpration[0];
-                operation = trimExpration[1];
-                num2 = trimExpration[2];
-
-
                 //проверям введены римские символы или нет
                 for (int i = 1; i < rimNumbers.Length; i++)
                 {
@@ -65,7 +63,7 @@ namespace Calculator
                 {
                     int rezalt = Count(operation, arabNum1, arabNum2, rimSymbol);
 
-                    Console.WriteLine("Output: " + ConvertToRim(rezalt));
+                    Console.WriteLine("Результат: " + ConvertToRim(rezalt));
                 }
                 //если введены арабские, преобразование стринг в цифры и вычисление
                 if ((int.TryParse(num1, out arabNum1) == true && int.TryParse(num2, out arabNum2) == true) && (rimSymbol == false) && (arabNum1 < 11) && (arabNum2 < 11))
@@ -73,12 +71,12 @@ namespace Calculator
                     int rezalt = Count(operation, arabNum1, arabNum2);
                     arabSymbol = true;
 
-                    Console.WriteLine("Output: " + rezalt);
+                    Console.WriteLine("Результат: " + rezalt);
                 }
                 // если введены не римские и не арабские цифры 
                 if (rimSymbol == false && arabSymbol == false)
                 {
-                    Console.WriteLine("Некорректный формат чисел");
+                    Console.WriteLine("Неверный формат цифр");
                 }
 
 
@@ -86,22 +84,20 @@ namespace Calculator
 
             else
             {
-                Console.WriteLine($"Некорректный формат ввода: элементов={trimExpration.Count}; 1й элемент={num1}; операция={operation}; 2й элемент={num2}");
+                Console.WriteLine("Неверный формат ввода");
             }
 
-            Console.WriteLine("Program finish");
             Console.ReadKey();
         }
 
 
-
         public static int Count(string operation, int arabNum1, int arabNum2, bool rim = false)
         {
-            int rezalt = 0;
+            int result = 0;
             switch (operation)
             {
                 case "+":
-                    rezalt = arabNum1 + arabNum2;
+                    result = arabNum1 + arabNum2;
                     break;
                 case "-":
                     if (rim == true && arabNum1 < arabNum2)
@@ -111,7 +107,7 @@ namespace Calculator
                     }
                     else
                     {
-                        rezalt = arabNum1 - arabNum2;
+                        result = arabNum1 - arabNum2;
                     }
                     break;
                 case "/":
@@ -127,19 +123,19 @@ namespace Calculator
                     }
                     else
                     {
-                        rezalt = arabNum1 / arabNum2;
+                        result = arabNum1 / arabNum2;
                     }
                     break;
                 case "*":
-                    rezalt = arabNum1 * arabNum2;
+                    result = arabNum1 * arabNum2;
                     break;
                 default:
                     Console.WriteLine("Неверное выражение");
                     break;
             }
 
-            return rezalt;
-        }//вычисляет (А +-/* В)
+            return result;
+        }
 
         public static string ConvertToRim(int number)
         {
@@ -147,7 +143,7 @@ namespace Calculator
             string[] rimTen = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
             string[] rimNumbers = new string[] { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
 
-            string rezult = "";
+            string result = "";
 
             string arabNum = number.ToString();
 
@@ -159,24 +155,24 @@ namespace Calculator
                 {
                     int index = int.Parse(arabNum[length - i].ToString());
 
-                    rezult += rimNumbers[index] + " ";
+                    result += rimNumbers[index] + " ";
                 }
 
                 if (i == 2)
                 {
                     int index = int.Parse(arabNum[length - i].ToString());
 
-                    rezult += rimTen[index] + " ";
+                    result += rimTen[index] + " ";
                 }
 
                 if (i == 3)
                 {
                     int index = int.Parse(arabNum[length - i].ToString());
 
-                    rezult += rimHundred[index] + " ";
+                    result += rimHundred[index] + " ";
                 }
             }
-            return rezult;
-        }// конвертирует арабские цифры в римские
+            return result;
+        }
     }
 }
